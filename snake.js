@@ -36,14 +36,15 @@ function changeDirection(event) {
     if (event.code === "KeyW" || event.key === "ArrowUp") {
         config.direction = "u";
     }
-    if (event.code === "KeyS" || event.key === "ArrowDown") {
+    else if (event.code === "KeyS" || event.key === "ArrowDown") {
         config.direction = "d";
     }
-    if (event.code === "KeyA" || event.key === "ArrowLeft") {
+    else if (event.code === "KeyA" || event.key === "ArrowLeft") {
         config.direction = "l";
     }
-    if (event.code === "KeyD" || event.key === "ArrowRight") {
+    else if (event.code === "KeyD" || event.key === "ArrowRight") {
         config.direction = "r";
     }
+    else return;
     console.log(config.direction)
 }

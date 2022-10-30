@@ -1,0 +1,41 @@
+.snake-section {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(201, 201, 201);
+}
+
+.snake-field {
+    position: relative;
+    display: grid;
+    width: 600px;
+    height: 600px;
+    background-color: rgb(104, 104, 104);
+}
+
+.cell {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    background-color: bisque;
+    border-width: 1px;
+    border-style: dashed;
+    border-top-color: rgba(223, 192, 154, 0.5);
+    border-left-color: rgba(223, 192, 154, 0.5);
+    border-bottom-color: transparent;
+    border-right-color: transparent;
+
+}
+
+.snake-body {
+    background-color: rgb(23, 76, 162);
+}
+
+.snake-head {
+    background-color: rgb(180, 28, 71);
+}

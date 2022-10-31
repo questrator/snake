@@ -5,48 +5,73 @@ go.addEventListener("click", start);
 document.body.addEventListener("keydown", changeDirection);
 
 const config = {
-    cols: 51,
-    rows: 51,
+    cols: 31,
+    rows: 31,
     length: 4,
-    body: [[26, 27], [26, 28], [26, 29]],
-    head: [26, 26],
     direction: "u",
-    prevHead: [null, null],
-    goFlag: false,
+    tail: [[26, 27], [26, 28], [26, 29]],
+    head: [26, 26],
+    prevHead: [],
+    prevEnd: [26, 29],
+    play: false,
     timer: null,
     food: false,
+    foodPos: [],
 };
 
-function start() {
-    if (!config.food) {
-        getFoodCell();
-    }
-    config.goFlag = !config.goFlag;
-    if (config.goFlag) config.timer = setInterval(render, 300);
-    else clearInterval(config.timer);
-}
-
-function initField(cols, rows) {
-    snakeField.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    snakeField.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-    for (let i = 0; i < cols * rows; i++) {
+(function initField() {
+    snakeField.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+    snakeField.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`;
+    for (let i = 0; i < config.cols * config.rows; i++) {
         const cell = document.createElement("div");
-        cell.dataset.pos = `${Math.floor(i % cols)}-${Math.floor(i / rows)}`;
+        cell.dataset.pos = `${Math.floor(i % config.cols)}-${Math.floor(i / config.rows)}`;
         cell.classList.add("cell");
         snakeField.appendChild(cell);
     }
-}
-initField(config.cols, config.rows);
+    setSnake();
+})();
 
-function getSnake() {
+function setSnake() {
     const headPos = `[data-pos="${config.head[0]}-${config.head[1]}"]`;
     const snakeHead = document.querySelector(headPos);
     snakeHead.classList.add("snake-head");
+    snakeHead.classList.add("head-up");
+    
+    const tail = config.tail.slice(0).map(e => document.querySelector(`[data-pos="${e[0]}-${e[1]}"]`));
+    tail.forEach(e => e.classList.add("snake-tail"));
 }
-getSnake(config.head, config.body);
+
+function start() {
+    if (!config.food) setFoodCell();
+    config.play = !config.play;
+    if (config.play) config.timer = setInterval(render, 100);
+    else clearInterval(config.timer);
+}
+
+function changeDirection(event) {
+    if (config.play) {
+        if (event.code === "KeyW" || event.key === "ArrowUp") {
+            config.direction = "u";
+        }
+        else if (event.code === "KeyS" || event.key === "ArrowDown") {
+            config.direction = "d";
+        }
+        else if (event.code === "KeyA" || event.key === "ArrowLeft") {
+            config.direction = "l";
+        }
+        else if (event.code === "KeyD" || event.key === "ArrowRight") {
+            config.direction = "r";
+        }
+        else return;
+    }
+}
 
 function getNewPosition() {    
+    if (config.food) config.prevEnd = config.tail.pop();
+    config.tail = [[...config.head]].concat(config.tail);
+
     if (config.direction === "u") {
+
         if (config.head[1] === 0) config.head[1] = config.rows - 1;
         else config.head[1] -= 1;
     }
@@ -63,24 +88,13 @@ function getNewPosition() {
         config.head[0] -= 1;
     }
     clearPrevHead();
+    clearPrevEnd();
 }
 
-function changeDirection(event) {
-    if (config.goFlag) {
-        if (event.code === "KeyW" || event.key === "ArrowUp") {
-            config.direction = "u";
-        }
-        else if (event.code === "KeyS" || event.key === "ArrowDown") {
-            config.direction = "d";
-        }
-        else if (event.code === "KeyA" || event.key === "ArrowLeft") {
-            config.direction = "l";
-        }
-        else if (event.code === "KeyD" || event.key === "ArrowRight") {
-            config.direction = "r";
-        }
-        else return;        
-    }
+function clearPrevEnd() {
+    const prevEndPos = `[data-pos="${config.prevEnd[0]}-${config.prevEnd[1]}"]`;
+    const prevEnd = document.querySelector(prevEndPos);
+    prevEnd.classList.remove("snake-tail");
 }
 
 function clearPrevHead() {
@@ -89,21 +103,40 @@ function clearPrevHead() {
     prevHead.classList.remove("snake-head");
 }
 
+function clearPrevFood() {
+    const prevFoodPos = `[data-pos="${config.foodPos[0]}-${config.foodPos[1]}"]`;
+    const prevFood = document.querySelector(prevFoodPos);
+    prevFood.classList.remove("food-cell");
+}
+
 function randomizer(from, to) {
     return Math.round(Math.random() * (to - from) + from);
 }
 
-function getFoodCell() {
+function setFoodCell() {
     const [x, y] = [randomizer(0, config.cols), randomizer(0, config.rows)];
     const foodCellPos = `[data-pos="${x}-${y}"]`;
     const foodCell = document.querySelector(foodCellPos);
     foodCell.classList.add("food-cell");
     config.food = true;
+    config.foodPos = [x, y];
+}
+
+function isFoodEaten() {
+    return config.head[0] === config.foodPos[0] && config.head[1] === config.foodPos[1];
+}
+
+function growSnake() {
+    config.tail.push(config.prevEnd);
 }
 
 function render() {
+    if (isFoodEaten()) {
+        growSnake();
+        clearPrevFood();
+        setFoodCell();
+    }
     config.prevHead = config.head.slice(0);
     getNewPosition();
-    getSnake();
-    console.log(config.head)
+    setSnake();
 }

@@ -5,18 +5,20 @@ go.addEventListener("click", start);
 document.body.addEventListener("keydown", changeDirection);
 
 const config = {
-    cols: 31,
-    rows: 31,
-    length: 4,
+    cols: 21,
+    rows: 21,
+    length: 3,
     direction: "u",
-    tail: [[26, 27], [26, 28], [26, 29]],
-    head: [26, 26],
+    head: [11, 11],
+    tail: [],
     prevHead: [],
-    prevEnd: [26, 29],
+    prevEnd: [],
     play: false,
     timer: null,
     food: false,
     foodPos: [],
+    speed: 200,
+    yield: 0,
 };
 
 (function initField() {
@@ -27,6 +29,12 @@ const config = {
         cell.dataset.pos = `${Math.floor(i % config.cols)}-${Math.floor(i / config.rows)}`;
         cell.classList.add("cell");
         snakeField.appendChild(cell);
+    }    
+})();
+
+(function initSnake() {
+    for (let i = 1; i <= config.length - 1; i++) {
+        config.tail.push([config.head[0], config.head[1] + i]);
     }
     setSnake();
 })();
@@ -35,16 +43,29 @@ function setSnake() {
     const headPos = `[data-pos="${config.head[0]}-${config.head[1]}"]`;
     const snakeHead = document.querySelector(headPos);
     snakeHead.classList.add("snake-head");
-    snakeHead.classList.add("head-up");
+    const borders = {
+        u: "head-up",
+        d: "head-down",
+        l: "head-left",
+        r: "head-right",
+        all: ["head-up", "head-down", "head-left", "head-right"]
+    }
+    
+    borders.all.forEach(e => snakeHead.classList.remove(e));
+    snakeHead.classList.add(borders[config.direction]);
     
     const tail = config.tail.slice(0).map(e => document.querySelector(`[data-pos="${e[0]}-${e[1]}"]`));
     tail.forEach(e => e.classList.add("snake-tail"));
+
+    const tailEnd = `[data-pos="${config.tail[config.tail.length - 1][0]}-${config.tail[config.tail.length - 1][1]}"]`;
+    const snakeEnd = document.querySelector(tailEnd);
+    snakeEnd.classList.add("tail-end-up");
 }
 
 function start() {
     if (!config.food) setFoodCell();
     config.play = !config.play;
-    if (config.play) config.timer = setInterval(render, 100);
+    if (config.play) config.timer = setInterval(render, config.speed);
     else clearInterval(config.timer);
 }
 
@@ -71,7 +92,6 @@ function getNewPosition() {
     config.tail = [[...config.head]].concat(config.tail);
 
     if (config.direction === "u") {
-
         if (config.head[1] === 0) config.head[1] = config.rows - 1;
         else config.head[1] -= 1;
     }
@@ -132,6 +152,8 @@ function growSnake() {
 
 function render() {
     if (isFoodEaten()) {
+        config.yield++;
+        config.speed -= 10;
         growSnake();
         clearPrevFood();
         setFoodCell();

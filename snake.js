@@ -9,7 +9,7 @@ const config = {
     rows: 21,
     length: 3,
     direction: "u",
-    head: [11, 11],
+    head: [10, 10],
     tail: [],
     prevHead: [],
     prevEnd: [],
